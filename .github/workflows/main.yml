@@ -29,7 +29,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/app
-            docker compose down --remove-orphans
-            docker rmi -f $(docker images -q)
             docker compose up -d --build --force-recreate
             
