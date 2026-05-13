@@ -1,0 +1,36 @@
+name: Deploy to Azure VM
+on:
+  push:
+    branches:
+      - main  # Trigger deployment on push to main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Copy files via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+                host: ${{ secrets.AZURE_VM_IP }}
+                username: ${{ secrets.AZURE_VM_USER }}
+                key: ${{ secrets.SSH_PRIVATE_KEY }}
+                source: "."
+                target: "~/app"
+
+      - name: Execute Docker Compose via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_VM_IP }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/app
+            docker compose down --remove-orphans
+            docker rm -f code-combat-app || true
+            docker rmi -f $(docker images -q)
+            docker compose up -d --build --force-recreate
+            
