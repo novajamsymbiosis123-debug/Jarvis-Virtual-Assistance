@@ -30,7 +30,6 @@ jobs:
           script: |
             cd ~/app
             docker compose down --remove-orphans
-            docker rm -f code-combat-app || true
             docker rmi -f $(docker images -q)
             docker compose up -d --build --force-recreate
             
